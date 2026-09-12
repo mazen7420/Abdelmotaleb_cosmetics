@@ -1,0 +1,151 @@
+CREATE TABLE Branches (
+    Branch_ID NUMBER PRIMARY KEY,
+    Branch_Address VARCHAR2(100) NOT NULL UNIQUE,
+    Branch_Phone VARCHAR2(20) NOT NULL UNIQUE
+);
+INSERT INTO Branches (Branch_ID, Branch_Address, Branch_Phone) VALUES (1, 'Cairo - Nasr City', '01011111111');
+INSERT INTO Branches (Branch_ID, Branch_Address, Branch_Phone) VALUES (2, 'Giza - Dokki', '01122222222');
+SELECT * FROM Branches;
+
+CREATE TABLE Warehouses (
+    Warehouse_ID NUMBER PRIMARY KEY,
+    Warehouse_Name VARCHAR2(50) NOT NULL UNIQUE,
+    Warehouse_Phone VARCHAR2(20) NOT NULL UNIQUE,
+    Branch_ID NUMBER NOT NULL,
+    CONSTRAINT fk_warehouse_branch FOREIGN KEY (Branch_ID) REFERENCES Branches(Branch_ID)
+);
+INSERT INTO Warehouses (Warehouse_ID, Warehouse_Name, Warehouse_Phone, Branch_ID) VALUES (1, 'Cairo Main Warehouse', '01055555555', 1);
+INSERT INTO Warehouses (Warehouse_ID, Warehouse_Name, Warehouse_Phone, Branch_ID) VALUES (2, 'Giza Storage', '01166666666', 2);
+SELECT * FROM Warehouses;
+
+CREATE TABLE Employees (
+    Employee_ID NUMBER PRIMARY KEY,
+    Employee_Name VARCHAR2(50) NOT NULL,
+    Job_Title VARCHAR2(50) NOT NULL,
+    Salary NUMBER NOT NULL CHECK (Salary > 0),
+    Hire_Date DATE NOT NULL,
+    Branch_ID NUMBER NOT NULL,
+    Warehouse_ID NUMBER,
+    Supervisor_ID NUMBER,
+    CONSTRAINT fk_emp_branch FOREIGN KEY (Branch_ID) REFERENCES Branches(Branch_ID),
+    CONSTRAINT fk_emp_warehouse FOREIGN KEY (Warehouse_ID) REFERENCES Warehouses(Warehouse_ID),
+    CONSTRAINT fk_emp_supervisor FOREIGN KEY (Supervisor_ID) REFERENCES Employees(Employee_ID)
+);
+INSERT INTO Employees (Employee_ID, Employee_Name, Job_Title, Salary, Hire_Date, Branch_ID, Warehouse_ID, Supervisor_ID) VALUES (1, 'Ahmed Ali', 'Manager', 15000, TO_DATE('2024-01-01','YYYY-MM-DD'), 1, 1, NULL);
+INSERT INTO Employees (Employee_ID, Employee_Name, Job_Title, Salary, Hire_Date, Branch_ID, Warehouse_ID, Supervisor_ID) VALUES (2, 'Sara Mohamed', 'Cashier', 7000, TO_DATE('2024-02-01','YYYY-MM-DD'), 1, 1, 1);
+SELECT * FROM Employees;
+
+CREATE TABLE Employee_Phones (
+    Employee_ID      NUMBER NOT NULL,
+    Employee_Phone   VARCHAR2(20) NOT NULL UNIQUE,
+    CONSTRAINT pk_ephone PRIMARY KEY (Employee_ID, Employee_Phone),
+    CONSTRAINT fk_ephone_emp FOREIGN KEY (Employee_ID) REFERENCES Employees(Employee_ID)
+);
+INSERT INTO Employee_Phones (Employee_ID, Employee_Phone) VALUES (1, '01011111111');
+INSERT INTO Employee_Phones (Employee_ID, Employee_Phone) VALUES (1, '01122222222');
+SELECT * FROM Employee_Phones;
+
+CREATE TABLE Suppliers (
+    Supplier_ID NUMBER PRIMARY KEY,
+    Supplier_Name VARCHAR2(50) NOT NULL,
+    Supplier_Company VARCHAR2(50) NOT NULL
+);
+INSERT INTO Suppliers (Supplier_ID, Supplier_Name, Supplier_Company) VALUES (1, 'Mohamed Ali', 'MyWay');
+INSERT INTO Suppliers (Supplier_ID, Supplier_Name, Supplier_Company) VALUES (2, 'Sara Ahmed', 'Tornado');
+SELECT * FROM Suppliers;
+
+CREATE TABLE Supplier_Phones (
+    Supplier_ID NUMBER NOT NULL,
+    Supplier_Phone VARCHAR2(20) NOT NULL UNIQUE,
+    CONSTRAINT pk_sphone PRIMARY KEY (Supplier_ID, Supplier_Phone),
+    CONSTRAINT fk_sphone_supplier FOREIGN KEY (Supplier_ID) REFERENCES Suppliers(Supplier_ID)
+);
+INSERT INTO Supplier_Phones (Supplier_ID, Supplier_Phone) VALUES (1, '01099999999');
+INSERT INTO Supplier_Phones (Supplier_ID, Supplier_Phone) VALUES (1, '01188888888');
+SELECT * FROM Supplier_Phones;
+CREATE TABLE Branch_Suppliers (
+    Branch_ID NUMBER NOT NULL,
+    Supplier_ID NUMBER NOT NULL,
+    CONSTRAINT pk_bs PRIMARY KEY (Branch_ID, Supplier_ID),
+    CONSTRAINT fk_bs_branch FOREIGN KEY (Branch_ID) REFERENCES Branches(Branch_ID),
+    CONSTRAINT fk_bs_supplier FOREIGN KEY (Supplier_ID) REFERENCES Suppliers(Supplier_ID)
+);
+INSERT INTO Branch_Suppliers (Branch_ID, Supplier_ID) VALUES (1, 1);
+INSERT INTO Branch_Suppliers (Branch_ID, Supplier_ID) VALUES (1, 2);
+SELECT * FROM Branch_Suppliers;
+
+CREATE TABLE Products (
+    Product_ID NUMBER PRIMARY KEY,
+    Product_Name VARCHAR2(50) NOT NULL,
+    Product_Category VARCHAR2(50) NOT NULL,
+    Product_Brand VARCHAR2(50) NOT NULL,
+    Price NUMBER NOT NULL CHECK (Price > 0),
+    Stock_Quantity NUMBER NOT NULL CHECK (Stock_Quantity > 0),
+    Expiry_Date DATE NOT NULL,
+    Warehouse_ID NUMBER NOT NULL,
+    CONSTRAINT fk_product_warehouse FOREIGN KEY (Warehouse_ID) REFERENCES Warehouses(Warehouse_ID)
+);
+INSERT INTO Products (Product_ID, Product_Name, Product_Category, Product_Brand, Price, Stock_Quantity, Expiry_Date, Warehouse_ID)VALUES (201, 'Face Cream Hydrating', 'Skincare', 'Nivea', 120, 50, TO_DATE('2026-08-01','YYYY-MM-DD'), 1);
+INSERT INTO Products (Product_ID, Product_Name, Product_Category, Product_Brand, Price, Stock_Quantity, Expiry_Date, Warehouse_ID) VALUES (202, 'Lipstick Matte Red', 'Makeup', 'Maybelline', 90, 120, TO_DATE('2027-03-01','YYYY-MM-DD'), 2);
+SELECT * FROM Products;
+
+CREATE TABLE Supplier_Products (
+    Supplier_ID NUMBER NOT NULL,
+    Product_ID NUMBER NOT NULL,
+    CONSTRAINT pk_supplier_products PRIMARY KEY (Supplier_ID, Product_ID),
+    CONSTRAINT fk_sp_supplier FOREIGN KEY (Supplier_ID) REFERENCES Suppliers(Supplier_ID),
+    CONSTRAINT fk_sp_product FOREIGN KEY (Product_ID) REFERENCES Products(Product_ID)
+);
+INSERT INTO Supplier_Products (Supplier_ID, Product_ID) VALUES (1, 201);
+INSERT INTO Supplier_Products (Supplier_ID, Product_ID) VALUES (1, 202);
+SELECT * FROM Supplier_Products;
+
+CREATE TABLE Customers (
+    Customer_ID NUMBER PRIMARY KEY,
+    Customer_Name VARCHAR2(50) NOT NULL,
+    Customer_Phone VARCHAR2(20) NOT NULL UNIQUE,
+    Customer_Type VARCHAR2(20) NOT NULL CHECK (Customer_Type IN ('Regular','Importer'))
+);
+INSERT INTO Customers (Customer_ID, Customer_Name, Customer_Phone, Customer_Type) VALUES (1, 'Mona Ahmed', '01012345678', 'Regular');
+INSERT INTO Customers (Customer_ID, Customer_Name, Customer_Phone, Customer_Type) VALUES (2, 'Sara Khaled', '01198765432', 'Importer');
+SELECT * FROM Customers;
+
+CREATE TABLE Orders (
+    Order_ID NUMBER PRIMARY KEY,
+    Order_Date DATE NOT NULL,
+    Payment_Method VARCHAR2(30) NOT NULL CHECK (Payment_Method IN ('Cash','Visa','Online')),
+    Total_Price NUMBER NOT NULL CHECK (Total_Price > 0),
+    Customer_ID NUMBER NOT NULL,
+    Branch_ID NUMBER NOT NULL,
+    CONSTRAINT fk_order_customer FOREIGN KEY (Customer_ID) REFERENCES Customers(Customer_ID),
+    CONSTRAINT fk_order_branch FOREIGN KEY (Branch_ID) REFERENCES Branches(Branch_ID)
+);
+INSERT INTO Orders (Order_ID, Order_Date, Payment_Method, Total_Price, Customer_ID, Branch_ID) VALUES (1001, TO_DATE('2025-05-01','YYYY-MM-DD'), 'Cash', 210, 1, 1);
+INSERT INTO Orders (Order_ID, Order_Date, Payment_Method, Total_Price, Customer_ID, Branch_ID) VALUES (1002, TO_DATE('2025-05-02','YYYY-MM-DD'), 'Visa', 500, 2, 2);
+SELECT * FROM Orders;
+
+CREATE TABLE Order_Products (
+    Order_ID NUMBER NOT NULL,
+    Product_ID NUMBER NOT NULL,
+    Quantity NUMBER NOT NULL CHECK (Quantity > 0),
+    CONSTRAINT pk_order_product PRIMARY KEY (Order_ID, Product_ID),
+    CONSTRAINT fk_op_order FOREIGN KEY (Order_ID) REFERENCES Orders(Order_ID),
+    CONSTRAINT fk_op_product FOREIGN KEY (Product_ID) REFERENCES Products(Product_ID)
+);
+INSERT INTO Order_Products (Order_ID, Product_ID, Quantity) VALUES (1001, 201, 2);
+INSERT INTO Order_Products (Order_ID, Product_ID, Quantity) VALUES (1001, 202, 1);
+SELECT * FROM Order_Products;
+
+CREATE TABLE Supply_Orders (
+    Sorder_ID NUMBER PRIMARY KEY,
+    Sorder_Date DATE NOT NULL,
+    Payment_Method VARCHAR2(30) NOT NULL CHECK (Payment_Method IN ('Cash','Visa','Online')),
+    Total_Price NUMBER NOT NULL CHECK (Total_Price >= 0),
+    Branch_ID NUMBER NOT NULL,
+    Supplier_ID NUMBER NOT NULL,
+    CONSTRAINT fk_supply_branch FOREIGN KEY (Branch_ID) REFERENCES Branches(Branch_ID),
+    CONSTRAINT fk_supply_supplier FOREIGN KEY (Supplier_ID) REFERENCES Suppliers(Supplier_ID)
+);
+INSERT INTO Supply_Orders (Sorder_ID, Sorder_Date, Payment_Method, Total_Price, Branch_ID, Supplier_ID) VALUES (5001, TO_DATE('2025-04-20','YYYY-MM-DD'), 'Cash', 2000, 1, 1);
+INSERT INTO Supply_Orders (Sorder_ID, Sorder_Date, Payment_Method, Total_Price, Branch_ID, Supplier_ID) VALUES (5002, TO_DATE('2025-04-22','YYYY-MM-DD'), 'Visa', 3500, 2, 2);
+SELECT * FROM Supply_Orders;
